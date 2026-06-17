@@ -1,47 +1,110 @@
+import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { generateBlog } from '../api/generate'
 
 export default function Dashboard() {
-  const { user, logout } = useAuth()
+  const { user, token, logout } = useAuth()
+
+  const [topic, setTopic] = useState('')
+  const [audience, setAudience] = useState('')
+  const [tone, setTone] = useState('professional')
+  const [wordCount, setWordCount] = useState(800)
+
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [result, setResult] = useState(null)
+
+  async function handleGenerate() {
+    setLoading(true)
+    setError('')
+    setResult(null)
+
+    try {
+      const response = await generateBlog(
+        {
+          topic,
+          audience,
+          tone,
+          word_count: Number(wordCount),
+        },
+        token
+      )
+
+      setResult(response)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-paper">
-      <header className="border-b border-stone-light/40 bg-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-violet" />
-            <span className="font-mono text-xs uppercase tracking-[0.18em] text-stone">
-              AI Content Studio
-            </span>
+    <div className="min-h-screen p-8">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold">Welcome {user?.name}</h1>
+          <p>{user?.email}</p>
+        </div>
+
+        <button onClick={logout}>
+          Sign Out
+        </button>
+      </div>
+
+      <div className="space-y-4 max-w-3xl">
+        <input
+          type="text"
+          placeholder="Topic"
+          value={topic}
+          onChange={(e) => setTopic(e.target.value)}
+          className="border p-2 w-full"
+        />
+
+        <input
+          type="text"
+          placeholder="Audience"
+          value={audience}
+          onChange={(e) => setAudience(e.target.value)}
+          className="border p-2 w-full"
+        />
+
+        <select
+          value={tone}
+          onChange={(e) => setTone(e.target.value)}
+          className="border p-2 w-full"
+        >
+          <option value="professional">Professional</option>
+          <option value="casual">Casual</option>
+          <option value="technical">Technical</option>
+        </select>
+
+        <input
+          type="number"
+          value={wordCount}
+          onChange={(e) => setWordCount(e.target.value)}
+          className="border p-2 w-full"
+        />
+
+        <button
+          onClick={handleGenerate}
+          disabled={loading}
+          className="border px-4 py-2"
+        >
+          {loading ? 'Generating...' : 'Generate Blog'}
+        </button>
+
+        {error && (
+          <div className="text-red-600">{error}</div>
+        )}
+
+        {result && (
+          <div className="border p-4 mt-6">
+            <pre className="whitespace-pre-wrap">
+              {JSON.stringify(result, null, 2)}
+            </pre>
           </div>
-          <button
-            onClick={logout}
-            className="text-sm font-medium text-stone hover:text-ink"
-          >
-            Sign out
-          </button>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-5xl px-6 py-16">
-        <p className="font-mono text-xs uppercase tracking-wide text-violet">
-          Dashboard
-        </p>
-        <h1 className="mt-2 font-display text-4xl font-medium tracking-tight text-ink">
-          Welcome{user?.name ? `, ${user.name}` : ''}.
-        </h1>
-        <p className="mt-3 max-w-md text-[15px] leading-relaxed text-stone">
-          This is the protected area of the studio. Content generation tools
-          will live here in a later phase — for now, this page exists to
-          prove the login wall works.
-        </p>
-
-        <div className="mt-10 rounded-xl border border-stone-light/50 bg-white p-6">
-          <p className="font-mono text-xs uppercase tracking-wide text-stone">
-            Signed in as
-          </p>
-          <p className="mt-1 text-[15px] text-ink">{user?.email}</p>
-        </div>
-      </main>
+        )}
+      </div>
     </div>
   )
 }

@@ -10,7 +10,7 @@ class BlogGenerateRequest(BaseModel):
     topic: str = Field(..., min_length=3, max_length=300, description="What the blog is about")
     audience: str = Field(..., min_length=3, max_length=200, description="Who will read this blog")
     tone: str = Field(..., min_length=2, max_length=50, description="e.g. professional, casual, humorous")
-    word_count: int = Field(default=800, ge=200, le=3000, description="Target word count")
+    word_count: int = Field(default=300, ge=50, le=300, description="Target word count")
 
 
 # ── Structured blog output (Pydantic validates AI response) ───────────────────

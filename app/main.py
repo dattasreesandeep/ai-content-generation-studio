@@ -1,10 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import auth
+from app.api import auth, generate
 from app.database.database import Base, engine
 
-# Create all database tables on startup
+# Import all models so SQLAlchemy creates every table on startup
+from app.models import User, GeneratedContent  # noqa: F401
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
@@ -14,8 +16,6 @@ app = FastAPI(
 )
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
-# Allow the React dev server during development.
-# In production, replace the origin with your actual frontend domain.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],
@@ -26,6 +26,7 @@ app.add_middleware(
 
 # ── Routers ───────────────────────────────────────────────────────────────────
 app.include_router(auth.router)
+app.include_router(generate.router)
 
 
 @app.get("/", tags=["Health"])

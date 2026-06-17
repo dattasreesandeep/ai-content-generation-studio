@@ -23,3 +23,9 @@ build/
 # Coverage
 .coverage
 htmlcov/.DS_Store
+
+# Logs
+*.log
+
+# Databases
+*.db

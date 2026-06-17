@@ -22,4 +22,4 @@ build/
 
 # Coverage
 .coverage
-htmlcov/
+htmlcov/.DS_Store
